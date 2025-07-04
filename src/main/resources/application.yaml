@@ -1,0 +1,14 @@
+spring:
+  application.name: Auth-Server
+
+database:
+  name: auth-server
+
+server:
+  port: 8081
+
+api:
+  access:
+    allowed:
+      ips: 223.185.130.98,223.185.130.99
+

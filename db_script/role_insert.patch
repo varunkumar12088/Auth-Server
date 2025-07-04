@@ -1,0 +1,23 @@
+
+db.getCollection('user_roles').insertMany([
+{
+    "role" : "ADMIN",
+    "description": "Administrator with full access to all resources and settings.",
+    "priority": 1000
+},
+{
+    "role" : "INTERNAL",
+    "description": "Internal user with access to internal resources and limited settings.",
+    "priority": 300
+},
+{
+    "role" : "EXTERNAL",
+    "description": "External user with access to public resources and minimal settings.",
+    "priority": 200
+},
+{
+    "role" : "USER",
+    "description": "Regular user with access to basic features and resources.",
+    "priority": 100
+}
+]);

@@ -1,0 +1,12 @@
+db.getCollection('api_access_role').insertMany([
+  {
+    "uri": "/api/v1/roles",
+    "method": "GET",
+    "role": "admin",
+    "isPublicAllowed": false,
+     "description": "List all roles"
+  },
+  {
+
+  }
+]);
