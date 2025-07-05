@@ -1,10 +1,5 @@
 package com.learning.auth.interceptor;
 
-import com.learning.auth.wrapper.RequestWrapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -43,19 +38,6 @@ public class RequestInterceptor implements HandlerInterceptor {
         }
 
         LOGGER.debug("Before controller Request URI: {}, method: {}", uri, method);
-        if(request instanceof RequestWrapper wrapper){
-            String bodyStr = wrapper.getBodyAsString();
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode body = mapper.readTree(bodyStr);
-                if (body.has("password")) {
-                    ((ObjectNode) body).put("password", "******");
-                }
-                LOGGER.debug("Before controller request body: {}", body.toPrettyString());
-            } catch (JsonProcessingException ex){
-                LOGGER.debug("Before controller request body: {}", bodyStr);
-            }
-        }
 
         return true;
     }
