@@ -47,10 +47,7 @@ public class ApiAccessRoleServiceImpl implements ApiAccessRoleService {
         ApiAccessRole apiAccessRole = this.getApiAccessRole(uri, method);
         if(apiAccessRole.isPublicAllowed()){
             LOGGER.debug("Public access allowed for URI: {}, method: {}", uri, method);
-            if(isRoleAllowed(role, apiAccessRole.getRole())){
-                return true;
-            }
-            return false;
+            return isRoleAllowed(role, apiAccessRole.getRole());
         }
         if(CollectionUtils.isEmpty(allowedIps) || StringUtils.isBlank(ipAddress)) {
             LOGGER.warn("No allowed IPs configured or IP address is blank. Access denied for URI: {}, method: {}", uri, method);
@@ -58,9 +55,8 @@ public class ApiAccessRoleServiceImpl implements ApiAccessRoleService {
         }
 
         if(allowedIps.contains(ipAddress)){
-            return true;
+            return isRoleAllowed(role, apiAccessRole.getRole());
         }
-
         return false;
     }
 

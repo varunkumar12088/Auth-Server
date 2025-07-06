@@ -1,7 +1,7 @@
 package com.learning.auth.controller;
 
 import com.learning.auth.dto.LoginRequest;
-import com.learning.auth.dto.LoginResponse;
+import com.learning.auth.dto.AuthResponse;
 import com.learning.auth.service.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class AuthController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         LOGGER.info("Received login request for user: {}", loginRequest.getUsername());
-        LoginResponse loginResponse = authService.login(loginRequest);
+        AuthResponse loginResponse = authService.login(loginRequest);
         return ResponseEntity.ok(loginResponse);
     }
 }

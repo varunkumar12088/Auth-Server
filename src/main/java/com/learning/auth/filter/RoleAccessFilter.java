@@ -18,7 +18,6 @@ import java.util.Optional;
 @Component
 public class RoleAccessFilter extends OncePerRequestFilter{
 
-
     @Autowired
     private ApiAccessRoleService apiAccessRoleService;
 

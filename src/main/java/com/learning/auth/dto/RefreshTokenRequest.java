@@ -3,9 +3,10 @@ package com.learning.auth.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Data
 @AllArgsConstructor
-public class LoginResponse {
+@Data
+public class RefreshTokenRequest {
 
-    private String token;
+    private String refreshToken;
+    private String accessToken;
 }
