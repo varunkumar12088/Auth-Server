@@ -4,10 +4,7 @@ import com.academy.auth.service.UserService;
 import com.academy.auth.dto.RegistrationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth/users")
@@ -20,5 +17,12 @@ public class UserController {
     public ResponseEntity<?> registration(@RequestBody RegistrationRequest request){
         userService.registerUser(request);
         return ResponseEntity.ok("Registration successful! Please check your email to activate your account.");
+    }
+
+
+    @RequestMapping(value = "/verify-email", method = RequestMethod.GET)
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        userService.verifyEmail(token);
+        return ResponseEntity.ok("User activated successfully!");
     }
 }

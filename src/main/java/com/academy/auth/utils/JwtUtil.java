@@ -1,5 +1,6 @@
 package com.academy.auth.utils;
 
+import com.academy.auth.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,11 +33,18 @@ public class JwtUtil {
     }
 
     public String generateAccessToken(UserDetails userDetails) {
+        // Generate an access token with a short expiration time
         return buildToken(userDetails, new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10));
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
+        // Generate a refresh token with a longer expiration time
        return buildToken(userDetails, new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10 * 2));
+    }
+
+    public String generateVerificationToken(User user) {
+        // Generate a verification token with a longer expiration time
+        return buildToken(user, new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7));
     }
 
     public boolean validateToken(String token) {
@@ -96,4 +104,19 @@ public class JwtUtil {
                 .compact();
     }
 
+    private String buildToken(User user, Date expiration) {
+        String role = user.getRole();
+
+        Map<String, String> claims = Map.of(
+                "username", user.getEmail(),
+                "role", role
+        );
+        return Jwts.builder()
+                .claims(claims)
+                .claim(SUB, user.getEmail())
+                .claim(IAT, new Date())
+                .claim(EXP, expiration)
+                .signWith(privateKey)
+                .compact();
+    }
 }

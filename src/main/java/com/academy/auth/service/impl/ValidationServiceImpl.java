@@ -1,12 +1,12 @@
 package com.academy.auth.service.impl;
 
 import com.academy.auth.entity.User;
-import com.academy.auth.entity.UserRole;
 import com.academy.auth.service.ValidationService;
 import com.academy.auth.dto.LoginRequest;
 import com.academy.auth.dto.RegistrationRequest;
 import com.academy.auth.repository.UserRepository;
-import com.academy.auth.repository.UserRoleRepository;
+import com.academy.common.constant.UserRole;
+import com.academy.common.util.ValidationUtil;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,28 +16,16 @@ import org.springframework.stereotype.Service;
 public class ValidationServiceImpl implements ValidationService {
 
     @Autowired
-    private UserRoleRepository userRoleRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Override
     public boolean isValidEmail(String email) {
-        if (StringUtils.isBlank(email)){
-            return false;
-        }
-        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-
-        return email.matches(emailRegex);
+        return ValidationUtil.isEmailValid(email);
     }
 
     @Override
     public boolean isValidPassword(String password) {
-        if (password == null || password.isEmpty()) {
-            return false;
-        }
-        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$";
-        return password.matches(passwordRegex);
+        return ValidationUtil.isPasswordValid(password);
 
     }
 
@@ -46,9 +34,8 @@ public class ValidationServiceImpl implements ValidationService {
         if (StringUtils.isBlank(role)) {
             throw new IllegalArgumentException("Role cannot be null or empty");
         }
-        UserRole userRole = userRoleRepository.findByRole(role);
 
-        if (ObjectUtils.isEmpty(userRole)) {
+        if (!UserRole.isValidRole(role)) {
             throw new IllegalArgumentException("Invalid role: " + role);
         }
     }

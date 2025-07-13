@@ -1,5 +1,6 @@
 package com.academy.auth.service.impl;
 
+import com.academy.auth.client.EmailClient;
 import com.academy.auth.entity.User;
 import com.academy.auth.service.UserService;
 import com.academy.auth.service.ValidationService;
@@ -8,6 +9,8 @@ import com.academy.auth.dto.UpdatePassword;
 import com.academy.auth.exception.UnAuthException;
 import com.academy.auth.exception.UserNotFoundException;
 import com.academy.auth.repository.UserRepository;
+import com.academy.auth.utils.JwtUtil;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -32,7 +35,10 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
+    @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
+    private EmailClient emailClient;
 
     @Override
     public void registerUser(RegistrationRequest request) {
@@ -45,6 +51,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encodedPassword);
         user.setEnabled(false);
         userRepository.save(user);
+        emailClient.sendEmailVerification(user);
     }
 
     @Override
@@ -68,6 +75,20 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("User not found");
         }
         throw new UnAuthException("Old password is wrong");
+    }
+
+    @Override
+    public void verifyEmail(String token) {
+        if(jwtUtil.validateToken(token)){
+            String username = jwtUtil.extractUsername(token);
+            User user = userRepository.findByUsernameOrEmail(username, username);
+            if(ObjectUtils.isNotEmpty(user)){
+                user.setEnabled(true);
+                userRepository.save(user);
+                return;
+            }
+        }
+        // need to implement email verification logic failed
     }
 
     @Override

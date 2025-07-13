@@ -27,4 +27,6 @@ public interface UserService {
 
     void disableUser(String username);
 
+    void verifyEmail(String token);
+
 }
