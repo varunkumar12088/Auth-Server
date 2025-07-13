@@ -1,6 +1,6 @@
 package com.academy.auth.service.impl;
 
-import com.academy.auth.client.EmailClient;
+import com.academy.auth.constant.EventType;
 import com.academy.auth.entity.User;
 import com.academy.auth.service.UserService;
 import com.academy.auth.service.ValidationService;
@@ -10,6 +10,7 @@ import com.academy.auth.exception.UnAuthException;
 import com.academy.auth.exception.UserNotFoundException;
 import com.academy.auth.repository.UserRepository;
 import com.academy.auth.utils.JwtUtil;
+import com.academy.common.event.bus.BufferedEventBus;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -38,7 +40,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
-    private EmailClient emailClient;
+    private BufferedEventBus bufferedEventBus;
 
     @Override
     public void registerUser(RegistrationRequest request) {
@@ -51,7 +53,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encodedPassword);
         user.setEnabled(false);
         userRepository.save(user);
-        emailClient.sendEmailVerification(user);
+        bufferedEventBus.publish(EventType.EMAIL_VERIFICATION.name(), user);
     }
 
     @Override
@@ -78,17 +80,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void verifyEmail(String token) {
-        if(jwtUtil.validateToken(token)){
-            String username = jwtUtil.extractUsername(token);
-            User user = userRepository.findByUsernameOrEmail(username, username);
-            if(ObjectUtils.isNotEmpty(user)){
-                user.setEnabled(true);
-                userRepository.save(user);
-                return;
+    public String verifyEmail(String email, String token) {
+        try {
+            if (jwtUtil.validateToken(token)) {
+                String username = jwtUtil.extractUsername(token);
+                User user = userRepository.findByUsernameOrEmail(username, username);
+                if (ObjectUtils.isNotEmpty(user)) {
+                    user.setEnabled(true);
+                    userRepository.save(user);
+                }
             }
+            LOGGER.info("Email verification successful for user: {}", email);
+            bufferedEventBus.publish(EventType.EMAIL_VERIFICATION_SUCCESS.name(), email);
+            return "Email verification successful for user: " + email;
+        } catch (Exception ex) {
+            LOGGER.error("Email verification failed for token: {}", token, ex);
+            bufferedEventBus.publish(EventType.EMAIL_VERIFICATION_FAILURE.name(), email);
+            return "Email verification failure for user: " + email;
         }
-        // need to implement email verification logic failed
+    }
+
+    @Override
+    public String resentVerificationEmail(String email) {
+        LOGGER.debug("Resending verification email for user: {}", email);
+        User user = userRepository.findByUsernameOrEmail(email, email);
+        bufferedEventBus.publish(EventType.EMAIL_VERIFICATION.name(), user);
+        return "Verification email resent to: " + email + ". Please check your inbox.";
     }
 
     @Override
@@ -106,15 +123,6 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
-    @Override
-    public String getUserRole(String username) {
-        return null;
-    }
-
-    @Override
-    public String getUserId(String username) {
-        return null;
-    }
 
     @Override
     public void updateUserDetails(String username, RegistrationRequest request) {
@@ -127,19 +135,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void enableUser(String username) {
-        User user = userRepository.findByUsernameOrEmail(username, username);
-        if (user != null) {
-            user.setEnabled(true);
-            userRepository.save(user);
-            LOGGER.info("User {} enabled successfully", username);
-        } else {
-            throw new IllegalArgumentException("User not found with username or email: " + username);
-        }
-    }
-
-    @Override
     public void disableUser(String username) {
 
     }
+
 }

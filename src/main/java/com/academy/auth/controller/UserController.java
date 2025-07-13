@@ -20,9 +20,15 @@ public class UserController {
     }
 
 
-    @RequestMapping(value = "/verify-email", method = RequestMethod.GET)
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-        userService.verifyEmail(token);
-        return ResponseEntity.ok("User activated successfully!");
+    @RequestMapping(value = "/{email}/verify-email", method = RequestMethod.GET)
+    public ResponseEntity<?> verifyEmail(@PathVariable String email, @RequestParam String token) {
+        String message = userService.verifyEmail(email, token);
+        return ResponseEntity.ok(message);
+    }
+
+    @RequestMapping(value = "/{email}/resend-verification-email", method = RequestMethod.GET)
+    public ResponseEntity<?> resendVerificationEmail(@PathVariable String email, @RequestParam String token) {
+        String message = userService.verifyEmail(email, token);
+        return ResponseEntity.ok(message);
     }
 }
