@@ -4,8 +4,8 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.learning.auth'
-version = '1.0.0'
+group = 'com.academy.auth'
+version = '0.0.1'
 
 java {
 	toolchain {
