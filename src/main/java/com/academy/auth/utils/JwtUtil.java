@@ -1,5 +1,6 @@
 package com.academy.auth.utils;
 
+import com.academy.auth.constant.AuthConstant;
 import com.academy.auth.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -34,17 +35,17 @@ public class JwtUtil {
 
     public String generateAccessToken(UserDetails userDetails) {
         // Generate an access token with a short expiration time
-        return buildToken(userDetails, new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10));
+        return buildToken(userDetails, new Date(AuthConstant.ACCESS_TOKEN_EXP));
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
         // Generate a refresh token with a longer expiration time
-       return buildToken(userDetails, new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10 * 2));
+       return buildToken(userDetails, new Date(AuthConstant.REFRESH_TOKEN_EXP));
     }
 
     public String generateVerificationToken(User user) {
         // Generate a verification token with a longer expiration time
-        return buildToken(user, new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7));
+        return buildToken(user, new Date(AuthConstant.VERIFICATION_TOKEN_EXP));
     }
 
     public boolean validateToken(String token) {

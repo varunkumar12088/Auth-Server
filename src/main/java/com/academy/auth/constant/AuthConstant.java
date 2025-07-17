@@ -1,5 +1,7 @@
 package com.academy.auth.constant;
 
+import java.time.Instant;
+
 public interface AuthConstant {
 
    String TOKEN = "token";
@@ -13,5 +15,9 @@ public interface AuthConstant {
    String USER_EMAIL_VERIFICATION_FAILURE_TEMPLATE_ID = "user.email.verification.failed";
    String USER_EMAIL_VERIFICATION_SUBJECT = "Email Verification";
    String USER_EMAIL_VERIFICATION_SUCCESS_SUBJECT = "Email Verification Successfully";
+
+   long ACCESS_TOKEN_EXP = (System.currentTimeMillis() + 1000 * 60 * 60 * 10);
+   long REFRESH_TOKEN_EXP = (System.currentTimeMillis() + 1000 * 60 * 60 * 24);
+   long VERIFICATION_TOKEN_EXP = (Instant.now().getEpochSecond() + 1000 * 60 * 60 * 24 * 7);
 
 }
