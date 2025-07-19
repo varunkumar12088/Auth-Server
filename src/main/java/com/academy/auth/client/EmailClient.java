@@ -29,12 +29,12 @@ public class EmailClient extends AbstractRestClient {
 
     @Override
     public String getBaseUrl() {
-        String baseUrl = configVarService.getConfigVar("email.base.url", String.class, "http://localhost:8085");
+        String baseUrl = configVarService.getConfigVarValue("email.base.url", String.class, "http://localhost:8085");
         return baseUrl;
     }
 
     public void sendEmailVerification(User user){
-        String uri = configVarService.getConfigVar("email.send.uri", String.class, "/api/v1/emails/send");
+        String uri = configVarService.getConfigVarValue("email.send.uri", String.class, "/api/v1/emails/send");
         logger.info("Sending email verification request to URI: {}", uri);
         String verificationToken = jwtUtil.generateVerificationToken(user);
 
@@ -52,8 +52,8 @@ public class EmailClient extends AbstractRestClient {
     }
 
     public void sendEmailVerificationSuccess(String email){
-        String uri = configVarService.getConfigVar("email.send.uri", String.class, "/api/v1/emails/send");
-        logger.info("Sending email verification failed to URI: {}", uri);
+        String uri = configVarService.getConfigVarValue("email.send.uri", String.class, "/api/v1/emails/send");
+        logger.info("Sending email verification success to URI: {}", uri);
 
         Map<String, Object> variables = new HashMap<>();
         variables.put(AuthConstant.LOGIN_URL, "http://localhost:8080/api/v1/auth/login");
@@ -65,7 +65,7 @@ public class EmailClient extends AbstractRestClient {
     }
 
     public void sendEmailVerificationFailure(String email){
-        String uri = configVarService.getConfigVar("email.send.uri", String.class, "/api/v1/emails/send");
+        String uri = configVarService.getConfigVarValue("email.send.uri", String.class, "/api/v1/emails/send");
         logger.info("Sending email verification failed to URI: {}", uri);
 
         String resendVerificationEmailUrl = String.format("http://localhost:8080/api/v1/auth/users/%s/resend-verification-email", email);
@@ -90,7 +90,7 @@ public class EmailClient extends AbstractRestClient {
     private Map<String, String> getHeaders(String email) {
         Map<String, String> headers = new HashMap<>();
         headers.put(CommonConstant.X_USER_EMAIL, email);
-        headers.put(CommonConstant.ROLE_HEADER, UserRole.INTERNAL.name());
+        headers.put(CommonConstant.X_USER_ROLE, UserRole.INTERNAL.name());
         return headers;
     }
 }

@@ -2,8 +2,12 @@ package com.academy.auth.utils;
 
 import com.academy.auth.constant.AuthConstant;
 import com.academy.auth.entity.User;
+import com.academy.common.constant.CommonConstant;
+import com.academy.common.entity.ConfigVar;
+import com.academy.common.service.ConfigVarService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -15,36 +19,40 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    private final PrivateKey privateKey;
-    private final PublicKey publicKey;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
 
-    private final KeyPair keyPair;
+    private KeyPair keyPair;
 
     private static final String KEY_ALGORITHM = "RSA";
     private static final String API_ROLE = "Api-Role";
     private static final String SUB = "sub";
     private static final String IAT = "iat";
     private static final String EXP = "exp";
-    private static final String SEED = "csjbzhdfhfscnzbbdsjbhfhsgdaLKjfshlahkgsfakdghfhksdvbshdbhsdabgkhsahkfhasfahhfshjs";
 
-    public JwtUtil() throws Exception {
-        this.keyPair = generateKeyPair(SEED);
+    private final ConfigVarService<ConfigVar, String> configVarService;
+
+    public JwtUtil(ConfigVarService<ConfigVar, String> configVarService) {
+        this.configVarService = configVarService;
+    }
+
+
+    @PostConstruct
+    public void init(){
+        final String seed = configVarService.getConfigVarValue(CommonConstant.ENCRYPTION_KEY_ID, String.class, CommonConstant.ENCRYPTION_KEY);
+        this.keyPair = generateKeyPair(seed);
         this.privateKey = keyPair.getPrivate();
         this.publicKey = keyPair.getPublic();
     }
-
     public String generateAccessToken(UserDetails userDetails) {
-        // Generate an access token with a short expiration time
         return buildToken(userDetails, new Date(AuthConstant.ACCESS_TOKEN_EXP));
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        // Generate a refresh token with a longer expiration time
        return buildToken(userDetails, new Date(AuthConstant.REFRESH_TOKEN_EXP));
     }
 
     public String generateVerificationToken(User user) {
-        // Generate a verification token with a longer expiration time
         return buildToken(user, new Date(AuthConstant.VERIFICATION_TOKEN_EXP));
     }
 
@@ -79,11 +87,15 @@ public class JwtUtil {
         return claims.get(API_ROLE, String.class);
     }
 
-    private KeyPair generateKeyPair(String seed) throws Exception {
-        SecureRandom secureRandom = new SecureRandom(seed.getBytes());
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGORITHM);
-        keyPairGenerator.initialize(2048, secureRandom);
-        return keyPairGenerator.generateKeyPair();
+    private KeyPair generateKeyPair(String seed) {
+        try {
+            SecureRandom secureRandom = new SecureRandom(seed.getBytes());
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+            keyPairGenerator.initialize(2048, secureRandom);
+            return keyPairGenerator.generateKeyPair();
+        }catch (Exception ex){
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
     }
 
     private String buildToken(UserDetails userDetails, Date expiration) {

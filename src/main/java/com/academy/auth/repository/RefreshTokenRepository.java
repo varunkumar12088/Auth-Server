@@ -9,7 +9,5 @@ import java.util.List;
 @Repository
 public interface RefreshTokenRepository extends MongoRepository<RefreshToken, String> {
 
-    List<RefreshToken> findAllByUsername(String username);
 
-    RefreshToken findByRefreshToken(String refreshToken);
 }

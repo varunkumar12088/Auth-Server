@@ -20,4 +20,8 @@ public interface AuthConstant {
    long REFRESH_TOKEN_EXP = (System.currentTimeMillis() + 1000 * 60 * 60 * 24);
    long VERIFICATION_TOKEN_EXP = (Instant.now().getEpochSecond() + 1000 * 60 * 60 * 24 * 7);
 
+   String REDIS_HOST_ID = "redis.host";
+   String REDIS_PORT_ID = "redis.port";
+   String REDIS_USER_WRITE_NAME = "redis.user.write.name";
+   String REDIS_USER_WRITE_PASSWORD = "redis.user.write.password";
 }
