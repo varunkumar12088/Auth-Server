@@ -14,11 +14,13 @@ public class User {
     @Id
     private String id;
     @Indexed(unique = true)
-    private String username;
+    private String username; // appName:username
     private String password;
-    @Indexed(unique = true)
+    @Indexed
     private String email;
     private String role;
+    private String groupId;
     private boolean enabled;
+    private String appName;
 
 }

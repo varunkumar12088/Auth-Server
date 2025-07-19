@@ -1,5 +1,6 @@
 package com.academy.auth.service.impl;
 
+import com.academy.auth.constant.AuthConstant;
 import com.academy.auth.service.AuthService;
 import com.academy.auth.service.ValidationService;
 import com.academy.auth.dto.LoginRequest;
@@ -17,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -90,6 +93,16 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String token) {
+
+    }
+
+    private String generateAccessToken(UserDetails userDetails, String appName){
+        String jti = UUID.randomUUID().toString();
+        long exp = AuthConstant.ACCESS_TOKEN_EXP;
+        String accessToken = jwtUtil.generateToken(userDetails, jti, appName, exp);
+    }
+
+    private String generateRefreshToken(UserDetails userDetails){
 
     }
 }

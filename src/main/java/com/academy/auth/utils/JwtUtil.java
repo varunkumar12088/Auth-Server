@@ -25,10 +25,13 @@ public class JwtUtil {
     private KeyPair keyPair;
 
     private static final String KEY_ALGORITHM = "RSA";
-    private static final String API_ROLE = "Api-Role";
     private static final String SUB = "sub";
     private static final String IAT = "iat";
     private static final String EXP = "exp";
+    private static final String JTI = "jti";
+    private static final String APP_NAME  = "appName";
+    private static final String USERNAME = "username";
+    private static final String USER_ROLES = "roles";
 
     private final ConfigVarService<ConfigVar, String> configVarService;
 
@@ -44,12 +47,8 @@ public class JwtUtil {
         this.privateKey = keyPair.getPrivate();
         this.publicKey = keyPair.getPublic();
     }
-    public String generateAccessToken(UserDetails userDetails) {
-        return buildToken(userDetails, new Date(AuthConstant.ACCESS_TOKEN_EXP));
-    }
-
-    public String generateRefreshToken(UserDetails userDetails) {
-       return buildToken(userDetails, new Date(AuthConstant.REFRESH_TOKEN_EXP));
+    public String generateToken(UserDetails userDetails, String jti, String appName, long exp) {
+        return buildToken(userDetails, jti, appName, exp);
     }
 
     public String generateVerificationToken(User user) {
@@ -84,7 +83,7 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.get(API_ROLE, String.class);
+        return claims.get(USER_ROLES, String.class);
     }
 
     private KeyPair generateKeyPair(String seed) {
@@ -98,21 +97,23 @@ public class JwtUtil {
         }
     }
 
-    private String buildToken(UserDetails userDetails, Date expiration) {
+    private String buildToken(UserDetails userDetails, String jti, String appName, long expiration) {
         String role = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .findFirst()
                 .orElse("USER");
 
-        Map<String, String> claims = Map.of(
-                "username", userDetails.getUsername(),
-                "role", role
+        Map<String, Object> claims = Map.of(
+                USERNAME, userDetails.getUsername(),
+                USER_ROLES, role,
+                SUB, userDetails.getUsername(),
+                IAT, new Date(),
+                EXP, new Date(expiration),
+                JTI, jti,
+                APP_NAME, appName
         );
         return Jwts.builder()
                 .claims(claims)
-                .claim(SUB, userDetails.getUsername())
-                .claim(IAT, new Date())
-                .claim(EXP, expiration)
                 .signWith(privateKey)
                 .compact();
     }
