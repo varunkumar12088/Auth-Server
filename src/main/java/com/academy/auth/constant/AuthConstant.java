@@ -9,7 +9,7 @@ public interface AuthConstant {
    String EMAIL_RESEND_URL = "email_resend_url";
    String LOGIN_URL = "loginUrl";
    String USERNAME = "username";
-   String APP_NAME = "Authentication Service";
+   String APPLICATION_NAME = "Authentication Service";
    String USER_EMAIL_VERIFICATION_TEMPLATE_ID = "user.email.verification";
    String USER_EMAIL_VERIFICATION_SUCCESS_TEMPLATE_ID = "user.email.verification.success";
    String USER_EMAIL_VERIFICATION_FAILURE_TEMPLATE_ID = "user.email.verification.failed";
@@ -24,4 +24,12 @@ public interface AuthConstant {
    String REDIS_PORT_ID = "redis.port";
    String REDIS_USER_WRITE_NAME = "redis.user.write.name";
    String REDIS_USER_WRITE_PASSWORD = "redis.user.write.password";
+   String JTI = "jti";
+   String APP_NAME  = "appName";
+   String SUB = "sub";
+   String IAT = "iat";
+   String EXP = "exp";
+   String USER_ROLES = "roles";
+   String ACCESS_TOKEN = "accessToken";
+
 }

@@ -25,13 +25,6 @@ public class JwtUtil {
     private KeyPair keyPair;
 
     private static final String KEY_ALGORITHM = "RSA";
-    private static final String SUB = "sub";
-    private static final String IAT = "iat";
-    private static final String EXP = "exp";
-    private static final String JTI = "jti";
-    private static final String APP_NAME  = "appName";
-    private static final String USERNAME = "username";
-    private static final String USER_ROLES = "roles";
 
     private final ConfigVarService<ConfigVar, String> configVarService;
 
@@ -83,7 +76,7 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.get(USER_ROLES, String.class);
+        return claims.get(AuthConstant.USER_ROLES, String.class);
     }
 
     public String extractAppName(String token) {
@@ -92,7 +85,7 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.get(APP_NAME, String.class);
+        return claims.get(AuthConstant.APP_NAME, String.class);
     }
 
     public String extractJTI(String token) {
@@ -101,7 +94,7 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claims.get(JTI, String.class);
+        return claims.get(AuthConstant.JTI, String.class);
     }
 
     private KeyPair generateKeyPair(String seed) {
@@ -122,13 +115,13 @@ public class JwtUtil {
                 .orElse("USER");
 
         Map<String, Object> claims = Map.of(
-                USERNAME, userDetails.getUsername(),
-                USER_ROLES, role,
-                SUB, userDetails.getUsername(),
-                IAT, new Date(),
-                EXP, new Date(expiration),
-                JTI, jti,
-                APP_NAME, appName
+                AuthConstant.USERNAME, userDetails.getUsername(),
+                AuthConstant.USER_ROLES, role,
+                AuthConstant.SUB, userDetails.getUsername(),
+                AuthConstant.IAT, new Date(),
+                AuthConstant.EXP, new Date(expiration),
+                AuthConstant.JTI, jti,
+                AuthConstant.APP_NAME, appName
         );
         return Jwts.builder()
                 .claims(claims)
@@ -140,14 +133,14 @@ public class JwtUtil {
         String role = user.getRole();
 
         Map<String, String> claims = Map.of(
-                "username", user.getEmail(),
-                "role", role
+                AuthConstant.USERNAME, user.getEmail(),
+                AuthConstant.USER_ROLES, role
         );
         return Jwts.builder()
                 .claims(claims)
-                .claim(SUB, user.getEmail())
-                .claim(IAT, new Date())
-                .claim(EXP, expiration)
+                .claim(AuthConstant.SUB, user.getEmail())
+                .claim(AuthConstant.IAT, new Date())
+                .claim(AuthConstant.EXP, expiration)
                 .signWith(privateKey)
                 .compact();
     }

@@ -81,7 +81,7 @@ public class EmailClient extends AbstractRestClient {
         return EmailDTO.builder()
                 .to(email)
                 .subject(subject)
-                .applicationName(AuthConstant.APP_NAME)
+                .applicationName(AuthConstant.APPLICATION_NAME)
                 .templateVariables(variables)
                 .templateId(templateId)
                 .build();
