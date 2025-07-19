@@ -24,7 +24,10 @@ public abstract class AbstractProcessor<E> implements Processor<Event> {
             logger.warn("Received null event or data, cannot process.");
             return false;
         }
-        if (StringUtils.equalsAnyIgnoreCase(event.getType(), eventType.name())) {
+        if(StringUtils.isBlank(event.getType()) || ObjectUtils.isEmpty(eventType)){
+            return false;
+        }
+        if (event.getType().equalsIgnoreCase(eventType.name())) {
             logger.info("processing start: {}", event);
             return true;
         }

@@ -22,5 +22,7 @@ public class User {
     private String groupId;
     private boolean enabled;
     private String appName;
+    private String createdDTM;
+    private String updateDTM;
 
 }

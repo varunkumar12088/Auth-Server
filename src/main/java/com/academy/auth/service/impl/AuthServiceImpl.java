@@ -1,5 +1,6 @@
 package com.academy.auth.service.impl;
 
+import com.academy.auth.constant.AppName;
 import com.academy.auth.constant.AuthConstant;
 import com.academy.auth.service.AuthService;
 import com.academy.auth.service.ValidationService;
@@ -8,6 +9,7 @@ import com.academy.auth.dto.AuthResponse;
 import com.academy.auth.dto.RefreshTokenRequest;
 import com.academy.auth.exception.UnAuthException;
 import com.academy.auth.utils.JwtUtil;
+import com.academy.common.constant.CommonConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,7 @@ import java.util.UUID;
 public class AuthServiceImpl implements AuthService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthServiceImpl.class);
+    private static final String COLON = ":";
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -42,9 +45,12 @@ public class AuthServiceImpl implements AuthService {
         LOGGER.info("Processing login request for user: {}", request.getUsername());
         validationService.validateLoginRequest(request);
         try{
-
+            if(!AppName.isValidAppName(request.getAppName())){
+                request.setAppName(AppName.DEFAULT.name());
+            }
+            String username = request.getAppName() + COLON + request.getUsername();
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                    new UsernamePasswordAuthenticationToken(username, request.getPassword()));
             LOGGER.debug("Authentication attempt for user: {}", request.getUsername());
 
             // Check if the authentication was successful
@@ -54,8 +60,8 @@ public class AuthServiceImpl implements AuthService {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
 
                 // Generate JWT tokens
-                String accessToken = jwtUtil.generateAccessToken(userDetails);
-                String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+                String accessToken = generateAccessToken(userDetails, request.getAppName());
+                String refreshToken = generateRefreshToken(userDetails, request.getAppName());
 
                 LOGGER.info("Generated JWT token for user: {}", request.getUsername());
                  return new AuthResponse(accessToken, refreshToken);
@@ -82,12 +88,15 @@ public class AuthServiceImpl implements AuthService {
         if(StringUtils.isBlank(username)) {
             throw new UnAuthException("Invalid refresh token: no username found");
         }
+        String appName = jwtUtil.extractAppName(request.getRefreshToken());
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        String finalUsername = appName + COLON + username;
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(finalUsername);
 
         // Generate JWT tokens
-        String accessToken = jwtUtil.generateAccessToken(userDetails);
-        String refreshToken = jwtUtil.generateRefreshToken(userDetails);
+        String accessToken = generateAccessToken(userDetails, appName);
+        String refreshToken = generateRefreshToken(userDetails, appName);
         return new AuthResponse(accessToken, refreshToken);
     }
 
@@ -99,10 +108,12 @@ public class AuthServiceImpl implements AuthService {
     private String generateAccessToken(UserDetails userDetails, String appName){
         String jti = UUID.randomUUID().toString();
         long exp = AuthConstant.ACCESS_TOKEN_EXP;
-        String accessToken = jwtUtil.generateToken(userDetails, jti, appName, exp);
+        return jwtUtil.generateToken(userDetails, jti, appName, exp);
     }
 
-    private String generateRefreshToken(UserDetails userDetails){
-
+    private String generateRefreshToken(UserDetails userDetails, String appName){
+        String jti = UUID.randomUUID().toString();
+        long exp = AuthConstant.ACCESS_TOKEN_EXP;
+        return jwtUtil.generateToken(userDetails, jti, appName, exp);
     }
 }

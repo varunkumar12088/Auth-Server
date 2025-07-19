@@ -27,4 +27,6 @@ public class RefreshToken {
     private String replacedByToken;
 
     private CreationSource creationSource;
+    private String createdDTM;
+    private String updateDTM;
 }

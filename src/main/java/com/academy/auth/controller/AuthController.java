@@ -1,5 +1,6 @@
 package com.academy.auth.controller;
 
+import com.academy.auth.dto.RefreshTokenRequest;
 import com.academy.auth.service.AuthService;
 import com.academy.auth.dto.LoginRequest;
 import com.academy.auth.dto.AuthResponse;
@@ -26,5 +27,12 @@ public class AuthController {
         LOGGER.info("Received login request for user: {}", loginRequest.getUsername());
         AuthResponse loginResponse = authService.login(loginRequest);
         return ResponseEntity.ok(loginResponse);
+    }
+
+    @RequestMapping(value = "/refresh-token", method = RequestMethod.POST)
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshToken){
+        LOGGER.info("Received refreshToken ");
+        AuthResponse authResponse = authService.refreshToken(refreshToken);
+        return ResponseEntity.ok(authResponse);
     }
 }

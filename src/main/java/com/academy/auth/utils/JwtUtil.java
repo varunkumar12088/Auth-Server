@@ -86,6 +86,24 @@ public class JwtUtil {
         return claims.get(USER_ROLES, String.class);
     }
 
+    public String extractAppName(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(publicKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get(APP_NAME, String.class);
+    }
+
+    public String extractJTI(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(publicKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get(JTI, String.class);
+    }
+
     private KeyPair generateKeyPair(String seed) {
         try {
             SecureRandom secureRandom = new SecureRandom(seed.getBytes());
