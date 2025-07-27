@@ -15,33 +15,30 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-public class RedisTokenUpdateProcessor extends AbstractProcessor<Event> {
+public class TokenRemoveProcessor extends AbstractProcessor<Event>{
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisTokenUpdateProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TokenRemoveProcessor.class);
 
     @Autowired
     private RedisService redisService;
 
     @Override
     public boolean canProcess(Event event) {
-        return this.canProcess(event, EventType.REDIS_TOKEN_UPDATE);
+        return this.canProcess(event, EventType.TOKEN_REMOVE);
     }
 
     @Override
     public void process(Event event) {
-        LOGGER.debug("Processing event for redius token update");
+        LOGGER.debug("Processing event for token remove");
         try {
             Map<String, Object> eventData = (Map<String, Object>) event.getData();
             String appName = (String) eventData.getOrDefault(AuthConstant.APP_NAME, AppName.DEFAULT.name());
             String username = (String) eventData.getOrDefault(AuthConstant.USERNAME, "");
             String jti = (String) eventData.getOrDefault(AuthConstant.JTI, UUID.randomUUID().toString());
             String key = KeyUtil.redisTokenKey(appName, username, jti);
-            Long exp = (Long) eventData.getOrDefault(AuthConstant.EXP, AuthConstant.ACCESS_TOKEN_EXP);
-            String token = (String) eventData.get(AuthConstant.TOKEN);
-
+            redisService.deleteKeysContaining(key);
         } catch (Exception ex){
-            LOGGER.error("While processing event for redius token update");
+            LOGGER.error("While processing event for token remove ", ex);
         }
-
     }
 }

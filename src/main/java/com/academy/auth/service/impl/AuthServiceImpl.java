@@ -2,6 +2,7 @@ package com.academy.auth.service.impl;
 
 import com.academy.auth.constant.AppName;
 import com.academy.auth.constant.AuthConstant;
+import com.academy.auth.constant.EventType;
 import com.academy.auth.service.AuthService;
 import com.academy.auth.service.ValidationService;
 import com.academy.auth.dto.LoginRequest;
@@ -9,7 +10,7 @@ import com.academy.auth.dto.AuthResponse;
 import com.academy.auth.dto.RefreshTokenRequest;
 import com.academy.auth.exception.UnAuthException;
 import com.academy.auth.utils.JwtUtil;
-import com.academy.common.constant.CommonConstant;
+import com.academy.common.event.bus.BufferedEventBus;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -39,6 +42,9 @@ public class AuthServiceImpl implements AuthService {
     private JwtUtil jwtUtil;
     @Autowired
     private ValidationService validationService;
+
+    @Autowired
+    private BufferedEventBus bufferedEventBus;
 
     @Override
     public AuthResponse login(LoginRequest request) {
@@ -60,8 +66,9 @@ public class AuthServiceImpl implements AuthService {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
 
                 // Generate JWT tokens
-                String accessToken = generateAccessToken(userDetails, request.getAppName());
-                String refreshToken = generateRefreshToken(userDetails, request.getAppName());
+                String jti = UUID.randomUUID().toString();
+                String accessToken = generateAccessToken(userDetails, request.getAppName(), jti);
+                String refreshToken = generateRefreshToken(userDetails, request.getAppName(), jti);
 
                 LOGGER.info("Generated JWT token for user: {}", request.getUsername());
                  return new AuthResponse(accessToken, refreshToken);
@@ -95,25 +102,49 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = userDetailsService.loadUserByUsername(finalUsername);
 
         // Generate JWT tokens
-        String accessToken = generateAccessToken(userDetails, appName);
-        String refreshToken = generateRefreshToken(userDetails, appName);
+        String jti = UUID.randomUUID().toString();
+        String accessToken = generateAccessToken(userDetails, appName, jti);
+        String refreshToken = generateRefreshToken(userDetails, appName, jti);
+        //Remove the token from
+        removeTokenFromCache(request.getRefreshToken(), jti);
         return new AuthResponse(accessToken, refreshToken);
     }
 
     @Override
     public void logout(String token) {
-
+        LOGGER.debug("logout ");
+        removeTokenFromCache(token, "");
     }
 
-    private String generateAccessToken(UserDetails userDetails, String appName){
-        String jti = UUID.randomUUID().toString();
+    private String generateAccessToken(UserDetails userDetails, String appName, String jti){
         long exp = AuthConstant.ACCESS_TOKEN_EXP;
+        Map<String, Object> eventData = getEventData(userDetails.getUsername(), appName, jti, exp);
+        bufferedEventBus.publish(EventType.ACCESS_TOKEN_UPDATE.name(), eventData);
         return jwtUtil.generateToken(userDetails, jti, appName, exp);
     }
 
-    private String generateRefreshToken(UserDetails userDetails, String appName){
-        String jti = UUID.randomUUID().toString();
+    private String generateRefreshToken(UserDetails userDetails, String appName, String jti){
         long exp = AuthConstant.ACCESS_TOKEN_EXP;
+        Map<String, Object> eventData = getEventData(userDetails.getUsername(), appName, jti, exp);
+        bufferedEventBus.publish(EventType.REFRESH_TOKEN_UPDATE.name(), eventData);
         return jwtUtil.generateToken(userDetails, jti, appName, exp);
+    }
+
+    private Map<String, Object> getEventData(String username, String appName, String jti, long exp){
+        Map<String, Object> eventData = new HashMap<>();
+        eventData.put(AuthConstant.APP_NAME, appName);
+        eventData.put(AuthConstant.USERNAME, username);
+        eventData.put(AuthConstant.JTI, jti);
+        eventData.put(AuthConstant.EXP, exp);
+        return eventData;
+    }
+
+    private void removeTokenFromCache(String token, String by){
+        String username = jwtUtil.extractUsername(token);
+        String appName = jwtUtil.extractAppName(token);
+        String jti = jwtUtil.extractJTI(token);
+        Map<String, Object> eventData = getEventData(username, appName, jti, 0);
+        eventData.put(AuthConstant.BY, by);
+        bufferedEventBus.publish(EventType.TOKEN_REMOVE.name(), eventData);
     }
 }

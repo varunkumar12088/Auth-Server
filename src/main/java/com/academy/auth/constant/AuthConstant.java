@@ -31,5 +31,8 @@ public interface AuthConstant {
    String EXP = "exp";
    String USER_ROLES = "roles";
    String ACCESS_TOKEN = "accessToken";
+   String REFRESH_TOKEN = "refreshToken";
+   String TYPE = "type";
+   String BY = "by";
 
 }
